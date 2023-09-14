@@ -1,0 +1,7 @@
+{
+    "name": "Vencord Loader",
+    "id": "strencher.vencord-loader",
+    "settings": {
+        "VENCORD_DIST": "../../../Vencord"
+    }
+}
