@@ -3,31 +3,19 @@ const path = require("path");
 const config = require("./index.json");
 const {webFrame} = require("electron");
 
-const distPath = path.resolve(__dirname, config.settings.VENCORD_DIST, "dist", "preload.js");
+const preloadPath = path.resolve(__dirname, config.settings.VENCORD_DIST, "dist", "vencordDesktopPreload.js");
+const rendererPath = path.resolve(__dirname, config.settings.VENCORD_DIST, "dist", "renderer.js");
 
-// Make it something that doesn't run anything
-process.env.DISCORD_PRELOAD = path.resolve(process.cwd(), "resources/build_info.json");
+if (fs.existsSync(preloadPath)) {
+    require(preloadPath);
+    
+    let renderer = fs.readFileSync(rendererPath, "utf8");
 
-// This is extremely cursed, but does it's job of keeping everything running
-webFrame.top.executeJavaScript(`
-    if (window.ultra) {
-        const origDefine = Object.defineProperty;
-
-        Object.defineProperty = function (obj, k, desc) {
-            if (desc.set?.toString().includes("Patching ")) {
-                const set = desc.set;
-                onceWebpackPollute(set);
-
-                Object.defineProperty = origDefine;
-            } else {
-                return origDefine(obj, k, desc);
-            }
-        }
+    if (fs.existsSync(__dirname, "..", "ultra")) {
+        renderer = renderer.replace(/(WebpackInterceptor[\s\S]+Object\.defineProperty\(window),\s?[\w]+,/, `$1, "\\$\\$VENCORD_WEBPACK_SPOOF",`);
     }
-`);
 
-if (fs.existsSync(distPath)) {
-    require(distPath);
+    webFrame.top.executeJavaScript(renderer);
 } else {
     console.log("[Vencord Loader] couldn't find preload script!");
 }
