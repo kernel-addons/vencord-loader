@@ -11,7 +11,7 @@ if (fs.existsSync(preloadPath)) {
     
     let renderer = fs.readFileSync(rendererPath, "utf8");
 
-    if (fs.existsSync(__dirname, "..", "ultra")) {
+    if (fs.existsSync(path.resolve(__dirname, "..", "ultra"))) {
         renderer = renderer.replace(/(WebpackInterceptor[\s\S]+Object\.defineProperty\(window),\s?[\w]+,/, `$1, "\\$\\$VENCORD_WEBPACK_SPOOF",`);
     }
 
